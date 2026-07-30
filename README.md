@@ -9,7 +9,7 @@ The design was developed and functionally verified using Xilinx Vivado 2026.1 wi
 
 
 
-🛠️ Tools & Project Files
+🛠️ TOOLS & PROJECT FILES
 Language: Verilog HDL
 
 Simulation Tool: Xilinx Vivado 2026.1 (Behavioral Simulation)
@@ -21,7 +21,7 @@ Advanced Peripheral Bus (APB)
 Serial Peripheral Interface (SPI)
 
 
-📂 Project Files
+📂 PROJECT FILES
 baud_rate_generator.v - baud_rate_generator_tb.v
 
 slave_select.v - slave_select_tb.v
@@ -33,7 +33,7 @@ apb_slave_interface.v - apb_slave_interface_tb.v
 
 
 
-⚙️ Features
+⚙️ FEATURES
 APB Slave Interface for processor communication
 
 SPI Master supporting full-duplex communication
