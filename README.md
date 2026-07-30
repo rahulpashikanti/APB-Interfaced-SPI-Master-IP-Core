@@ -1,103 +1,54 @@
-🚀 APB-Interfaced SPI Master IP Core using Verilog
+# 🚀 APB-Interfaced SPI Master IP Core using Verilog
 
-📌 Project Overview
+## 📌 Project Overview
 
-This project focuses on the design and implementation of an APB-Interfaced SPI Master IP Core using Verilog HDL. 
-The SPI Master is controlled through an Advanced Peripheral Bus (APB) interface, allowing a processor to communicate with SPI-compatible peripheral devices in a structured and efficient manner.
+This project focuses on the implementation of an **APB-Interfaced SPI Master IP Core**, which was designed using **Verilog HDL**. The design integrates an **Advanced Peripheral Bus (APB) Slave Interface** with an **SPI Master Controller**, enabling a processor to communicate with SPI-compatible peripheral devices through memory-mapped registers.
 
+To verify its functionality, I simulated the complete design using a custom Verilog testbench in **Xilinx Vivado 2026.1**.
 
-The design was developed and functionally verified using Xilinx Vivado 2026.1 with a custom Verilog testbench. 
-This project helped me understand the integration of standard on-chip communication protocols and strengthened my knowledge of RTL design and digital communication interfaces.
+The APB-SPI IP Core is a commonly used peripheral in modern System-on-Chip (SoC) architectures, providing an efficient bridge between a processor and SPI-based devices such as sensors, EEPROMs, Flash memories, and ADC/DAC modules. I developed this project as part of my learning journey in **VLSI Design & Verification**.
 
+---
 
+## 🛠️ Tools & Project Files
 
-🛠️ TOOLS & PROJECT FILES
-Language: Verilog HDL
-Simulation Tool: Xilinx Vivado 2026.1 (Behavioral Simulation)
+- **Language:** Verilog HDL
+- **Software:** Xilinx Vivado 2026.1 (Behavioral Simulation)
 
+---
 
-Protocols Used:
-Advanced Peripheral Bus (APB)
-Serial Peripheral Interface (SPI)
+## 🎯 Learning Outcomes
 
+While working on this project, I gained hands-on experience in several key areas:
 
-📂 PROJECT FILES
-baud_rate_generator.v - baud_rate_generator_tb.v
+- Writing clean and synthesizable Verilog HDL code.
+- Understanding the APB (Advanced Peripheral Bus) protocol.
+- Designing an SPI Master Controller for serial communication.
+- Developing modular RTL architectures for digital systems.
+- Creating Verilog testbenches for functional verification.
+- Debugging simulation waveforms using Xilinx Vivado.
+- Integrating multiple RTL modules into a complete IP Core.
 
-slave_select.v - slave_select_tb.v
+---
 
-shift_reg.v - shift_reg_tb.v
+## 🔮 Future Improvements
 
-apb_slave_interface.v - apb_slave_interface_tb.v
+In the next version of this project, I am planning to add the following features:
 
+- **Support for All SPI Modes:** Implement configurable CPOL and CPHA settings.
+- **Programmable Clock Divider:** Allow dynamic SPI clock frequency selection.
+- **FIFO Buffers:** Add transmit and receive FIFOs for efficient data transfer.
+- **Status & Interrupt Registers:** Implement Busy, Transfer Complete, and Error flags with interrupt support.
+- **Parameterization:** Make the design configurable for different data widths.
+- **Advanced Verification:** Develop a robust SystemVerilog/UVM-based verification environment.
 
-⚙️ FEATURES
-APB Slave Interface for processor communication
+---
 
-SPI Master supporting full-duplex communication
+## 👨‍💻 Author
 
-Configurable SPI clock generation
+**Rahul Pashikanti**  
+**Aspiring VLSI RTL Design & Verification Engineer**
 
-Chip Select (CS) control
+**📌 Areas of Interest:** VLSI Design, RTL Design, Design Verification, FPGA Design, Verilog & SystemVerilog.
 
-Serial data transmission (MOSI)
-
-Serial data reception (MISO)
-
-Multiple SPI slave support
-
-Behavioral simulation and functional verification
-
-
-🎯 Learning Outcomes
-Through this project, I gained hands-on experience in:
-
-Designing synthesizable Verilog RTL modules.
-
-Understanding the APB protocol and register-based communication.
-
-Implementing the SPI Master protocol (MOSI, MISO, SCLK, CS).
-
-Integrating multiple hardware modules into a complete IP Core.
-
-Developing Verilog testbenches for functional verification.
-
-Debugging simulation waveforms using Xilinx Vivado.
-
-Understanding SoC peripheral interface design.
-
-
-🔮 Future Improvements
-Future enhancements planned for this project include:
-
-Support for all four SPI modes (CPOL & CPHA configuration)
-
-Programmable SPI clock divider
-
-FIFO buffers for transmit and receive operations
-
-Interrupt generation on transfer completion
-
-Error detection and status flag registers
-
-Parameterizable data width (8/16/32-bit)
-
-Advanced verification using SystemVerilog and UVM
-
-APB4 protocol support with additional features
-
-
-👨‍💻 Author
-Rahul Pashikanti
-Aspiring VLSI Design & Verification Engineer
-Areas of Interest
-RTL Design
-Digital Design
-Design Verification
-VLSI System Design
-FPGA Development
-Verilog & SystemVerilog
-
-
-Connect with Me:
-www.linkedin.com/in/rahul-pashikanti-b818bb245 
+- **Connect with Me: **www.linkedin.com/in/rahul-pashikanti-b818bb245
