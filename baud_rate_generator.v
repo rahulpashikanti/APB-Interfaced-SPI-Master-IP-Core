@@ -1,110 +1,147 @@
-module baud_rate(
-    input pclk,preset_n,
-    input [1:0]spi_mode_i,input spiswai_i,
-    input [2:0]sppr_i,spr_i,
-    input cpol_i,cpha_i,ss_i, 
-    output reg sclk_o,
-    output reg miso_pos,miso_neg,mosi_pos,mosi_neg,
-    output [11:0]baud_rate_divisor);
+module baudrate_generator( pclk,presetn,spi_mode_i,spiswai_i,sppr_i,spr_i,cpol_i,cpha_i,ss_i,sclk_o,miso_receive_sclk_o,miso_receive_sclk0_o,mosi_send_sclk_o,mosi_send_sclk0_o,baud_rate_divisor_o);
+input pclk,presetn,spiswai_i,cpol_i,cpha_i,ss_i;
+input [1:0]spi_mode_i;
+input [2:0] sppr_i,spr_i;
 
-reg [11:0]count;
-wire pre_sclk;
+output reg sclk_o;
+output reg miso_receive_sclk_o,miso_receive_sclk0_o,mosi_send_sclk_o,mosi_send_sclk0_o;
+output [11:0] baud_rate_divisor_o;
+reg pre_sclk;
+reg [11:0] count;
 
-assign baud_rate_divisor=(sppr_i+1'b1)*(2**(spr_i+1'b1));
-assign pre_sclk=(cpol_i) ? 1'b1:1'b0;
+//serial clk generation
 
-always@(posedge pclk or negedge preset_n)
+always@(posedge pclk or negedge presetn)
 begin
-    if(!preset_n)
-    begin
-        count<=12'b0;
-        sclk_o<=pre_sclk;
-    end
-    else if((spi_mode_i==2'b00||spi_mode_i==2'b01)&&(!ss_i)&&(!spiswai_i))
-    begin
-        if(count==((baud_rate_divisor/2)-1'b1))
-        begin
-            count<=12'b0;
-            sclk_o<=~sclk_o;
-        end
-        else
-        begin
-            count<=count+1'b1;
-            sclk_o<=sclk_o;
-        end
-    end
-    else 
-    begin
-        count<=12'b0;
-        sclk_o<=pre_sclk;
-    end
+	if(!presetn)
+		sclk_o<=pre_sclk;
+	else
+		begin
+			if(((spi_mode_i==2'b00)|| (spi_mode_i==2'b01)) && (ss_i==1'b0) && (spiswai_i==1'b0))
+				begin
+					if(count==(((baud_rate_divisor_o)/2)-1))
+						sclk_o<=~sclk_o;
+					else
+						sclk_o<=sclk_o;
+				end
+			else
+				sclk_o<=pre_sclk;
+		end
 end
 
-always@(posedge pclk or negedge preset_n)
+always@(posedge pclk or negedge presetn)
 begin
-    if(!preset_n)
-    begin
-        miso_pos<=1'b0;
-        miso_neg<=1'b0;
-    end
-    else if((!cpha_i&cpol_i)||(cpha_i&!cpol_i))
-    begin
-        if(sclk_o)
-         begin
-            if(count==((baud_rate_divisor/2)-1'b1))
-                miso_neg<=1'b1;
-            else
-                miso_neg<=1'b0;
-         end
-        else
-            miso_neg<=1'b0;
-    end
-    else
-    begin
-        if(!sclk_o)
-        begin
-            if(count==((baud_rate_divisor/2)-1'b1))
-                miso_pos<=1'b1;
-            else
-                miso_pos<=1'b0;
-        end
-        else
-            miso_pos<=1'b0;
-    end
+	if(!presetn)
+		count<=12'b0;
+	else
+	begin
+		if(((spi_mode_i==2'b00)|| (spi_mode_i==2'b01)) && (ss_i==1'b0) && (spiswai_i==1'b0))
+		begin
+			if(count==(((baud_rate_divisor_o)/2)-1))
+				count<=12'b0;
+			else
+				count<=count+1;
+		end
+		else
+			count<=12'b0;
+	end
 end
 
-always@(posedge pclk or negedge preset_n)
-begin 
-    if(!preset_n)
-    begin
-        mosi_pos<=1'b0;
-        mosi_neg<=1'b0;
-    end
-    else if((!cpha_i&&cpol_i)||(cpha_i&&!cpol_i))
-    begin
-        if(sclk_o)
-        begin
-            if(count==((baud_rate_divisor/2)-2'b10))
-                mosi_neg<=1'b1;
-            else
-                mosi_neg<=1'b0;
-        end
-        else
-            mosi_neg<=1'b0;
-    end
-    else
-    begin
-        if(!sclk_o)
-        begin
-            if(count==((baud_rate_divisor/2)-2'b10))
-                mosi_pos<=1'b1;
-            else
-                mosi_pos<=1'b0;
-        end
-        else
-            mosi_pos<=1'b0;
-    end
+always@(*)
+begin
+	if(cpol_i)
+		pre_sclk=1'b1;
+	else
+		pre_sclk=1'b0;
 end
+
+assign baud_rate_divisor_o=((sppr_i+1)*(2**(spr_i+1)));
+
+
+
+
+//flags logic
+
+//MOSI send clk and mosi send sclk0
+always@(posedge pclk or negedge presetn)
+begin
+	if(!presetn)
+	begin
+		mosi_send_sclk_o<=0;
+		mosi_send_sclk0_o<=0;
+	end
+	else
+	begin
+		if((cpha_i ==1'b0 && cpol_i==1'b0) ||(cpha_i==1'b1 && cpol_i==1'b1))
+		begin
+			if(!sclk_o)
+			begin
+				if( ( count == baud_rate_divisor_o/2 - 2 ) && ( !ss_i ) )
+					mosi_send_sclk_o<=1'b1;
+				else
+					mosi_send_sclk_o<=1'b0;
+			end
+			else
+				mosi_send_sclk_o<=1'b0;
+		end
+		else
+		begin
+			if(sclk_o)
+			begin
+				if( ( count == baud_rate_divisor_o/2-2 ) && ( !ss_i ) )
+					mosi_send_sclk0_o<=1'b1;
+				else
+					mosi_send_sclk0_o<=1'b0;
+			end
+			else
+				mosi_send_sclk0_o<=1'b0;
+		end
+	end
+end
+
+
+//miso_receive_sclk_o
+
+always@(posedge pclk or negedge presetn)
+begin
+	if(!presetn)
+	begin
+		miso_receive_sclk_o<=0;
+		miso_receive_sclk0_o<=0;
+	end
+		
+	else
+	begin
+		if((cpha_i ==1'b0 && cpol_i==1'b0) ||(cpha_i==1'b1 && cpol_i==1'b1))
+		begin
+			if(!sclk_o)
+			begin
+				if( ( count == baud_rate_divisor_o/2-1 ) && ( !ss_i ) )
+					miso_receive_sclk_o<=1'b1;
+				else
+					miso_receive_sclk_o<=1'b0;
+			end
+			else
+				miso_receive_sclk_o<=1'b0;
+		end
+		else
+		begin
+			if(sclk_o)
+			begin
+				if( ( count == baud_rate_divisor_o/2-1 ) && ( !ss_i ) )
+					miso_receive_sclk0_o<=1'b1;
+				else
+					miso_receive_sclk0_o<=1'b0;
+			end
+			else
+				miso_receive_sclk0_o<=1'b0;
+		end
+	end
+end
+
 
 endmodule
 
+
+
+	
