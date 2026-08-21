@@ -4,7 +4,7 @@ input [7:0] data_mosi_i;
 output reg mosi_o;
 output reg [7:0]data_miso_o;
 
-	reg [7:0]temp_reg;
+reg [7:0]temp_reg;
 reg [7:0]shift_register;
 reg [2:0]count1,count2,count3,count;
 
@@ -221,3 +221,4 @@ always@(posedge pclk or negedge presetn)
 
 
 endmodule
+
