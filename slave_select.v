@@ -1,82 +1,150 @@
-module slave_select(input pclk,preset_n,mstr_i,spiswai_i,
-			input [1:0]spi_mode_i,
-			input send_data_i,
-			input [11:0]baud_rate_divisor,
-			output reg receive_data_o,ss_o,
-			output tip_o);
-wire [15:0]target;
-assign target =8*baud_rate_divisor;
-reg [15:0]count;
-reg rcv;
-assign tip_o=~ss_o;
-always@(posedge pclk or negedge preset_n)
-	begin
-		if(!preset_n)
-			ss_o<=1'b1;
-		else if(!spiswai_i && (spi_mode_i==2'b00 ||spi_mode_i==2'b01) && mstr_i)
-		begin
-			if(!send_data_i)
-			begin
-				if(count<=target-1'b1)
-					ss_o<=1'b0;
-				else
-					ss_o<=1'b1;
-			end
-	   		else
-		             ss_o<=1'b0;		
-		end
-		else
-			ss_o<=1'b1;
-	end
+ module slave_control_select(
+    pclk,
+    presetn,
+    mstr_i,
+    spiswai_i,
+    spi_mode_i,
+    send_data_i,
+    baud_rate_divisor_i,
+    receive_data_o,
+    ss_o,
+    tip_o
+);
 
-always@(posedge pclk or negedge preset_n)
-	begin
-		if(!preset_n)
-			count<=16'hffff;
-		else if(!spiswai_i && (spi_mode_i==2'b00 || spi_mode_i==2'b01) && mstr_i)
-			begin
-				if(!send_data_i)
-				begin
-					if(count<=target-1'b1)
-						count<=count+1'b1;
-					else
-						count<=16'hffff;
-				end
-				else
-					count<=16'b0;
-			end
-		else
-		       count<=16'hffff;
-	end	
-always@(posedge pclk or negedge preset_n)
-	begin
-		if(!preset_n)
-			rcv<=1'b0;
-		else if(!spiswai_i && (spi_mode_i==2'b00 || spi_mode_i==2'b01) && mstr_i)
-		begin
-			if(!send_data_i)
-			begin
-				if(count<=target-1'b1)
-				begin
-					if(count==target-1'b1)
-						rcv<=1'b1;
-					else
-						rcv<=1'b0;
-				end
-				else
-					rcv<=1'b0;
-			end
-			else
-				rcv<=1'b0;
-		end
-		else
-			rcv<=1'b0;
-	end	
-always@(posedge pclk or negedge preset_n)
-	begin
-		if(!preset_n)
-			receive_data_o<=1'b0;
-		else
-			receive_data_o<=rcv;
-	end
+input pclk;
+input presetn;
+input mstr_i;
+input spiswai_i;
+input send_data_i;
+
+input [1:0] spi_mode_i;
+input [11:0] baud_rate_divisor_i;
+
+output reg receive_data_o;
+output reg ss_o;
+output wire tip_o;
+
+parameter RUN  = 2'b00;
+parameter WAIT = 2'b01;
+
+reg rcv;
+reg [15:0] count;
+
+wire [7:0] target;
+
+
+// Receive data output
+
+always @(posedge pclk or negedge presetn)
+begin
+    if (!presetn)
+        receive_data_o <= 1'b0;
+    else
+        receive_data_o <= rcv;
+end
+
+
+// Receive generation
+
+always @(posedge pclk or negedge presetn)
+begin
+    if (!presetn)
+        rcv <= 1'b0;
+    else
+    begin
+        if ((spiswai_i == 0) &&
+            ((spi_mode_i == 2'b00) || (spi_mode_i == 2'b01)) &&
+            (mstr_i == 1))
+        begin
+            if (send_data_i)
+                rcv <= 1'b0;
+
+            else if (count <= target - 1'b1)
+            begin
+                if (count == target - 1'b1)
+                    rcv <= 1'b1;
+                else
+                    rcv <= 1'b0;
+            end
+
+            else
+                rcv <= 1'b0;
+        end
+
+        else
+            rcv <= 1'b0;
+    end
+end
+
+
+// Slave select signal generator
+
+always @(posedge pclk or negedge presetn)
+begin
+    if (!presetn)
+        ss_o <= 1'b1;
+
+    else
+    begin
+        if ((spiswai_i == 0) &&
+            ((spi_mode_i == 2'b00) || (spi_mode_i == 2'b01)) &&
+            (mstr_i == 1))
+        begin
+            if (send_data_i)
+                ss_o <= 1'b0;
+
+            else if (count <= target - 1'b1)
+                ss_o <= 1'b0;
+
+            else
+                ss_o <= 1'b1;
+        end
+
+        else
+            ss_o <= 1'b1;
+    end
+end
+
+
+// Counter
+
+always @(posedge pclk or negedge presetn)
+begin
+    if (!presetn)
+        count <= 16'hffff;
+
+    else
+    begin
+        if ((spiswai_i == 0) &&
+            ((spi_mode_i == 2'b00) || (spi_mode_i == 2'b01)) &&
+            (mstr_i == 1))
+        begin
+            if (send_data_i)
+                count <= 16'b0;
+
+            else if (count <= target - 1'b1)
+                count <= count + 1'b1;
+
+            else
+                count <= 16'hffff;
+        end
+
+        else
+            count <= 16'hffff;
+    end
+end
+
+
+// Target count
+// Baud rate divisor = 4
+// Target = 4 * 8 = 32
+
+assign target = baud_rate_divisor_i * 8;
+
+
+// TIP signal
+
+assign tip_o = ~ss_o;
+
 endmodule
+
